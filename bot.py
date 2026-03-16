@@ -44,14 +44,19 @@ async def send_random_image(interaction, tag):
         await interaction.followup.send("Không tìm thấy ảnh.")
         return
 
-    image = post.get("file_url")
+    image = (
+    post.get("file_url")
+    or post.get("large_file_url")
+    or post.get("preview_file_url")
+)
 
     embed = discord.Embed(
         title=f"Image: {tag}",
-        color=0x7289da
+        color=0x2b2d31
     )
 
     embed.set_image(url=image)
+    embed.set_author(name=tag)  
 
     view = ImageView(lambda i: send_random_image(i, tag))
 
