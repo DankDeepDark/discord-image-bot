@@ -33,13 +33,9 @@ async def send_random_image(interaction, tag):
 
     if not posts:
         url = f"https://danbooru.donmai.us/posts.json?tags={tag} order:random&limit=100"
-        post_url = f"https://danbooru.donmai.us/posts/{post['id']}"
+
         posts = await ImageAPI.fetch_images(url)
 
-        artist = post.get("tag_string_artist", "unknown")
-        score = post.get("score", 0)
-        rating = post.get("rating", "?")
-        # lọc post lỗi
         posts = [
             p for p in posts
             if p.get("file_url") or p.get("large_file_url")
@@ -63,13 +59,19 @@ async def send_random_image(interaction, tag):
         await interaction.followup.send("Ảnh không hợp lệ.")
         return
     
+    post_url = f"https://danbooru.donmai.us/posts/{post['id']}"
+
+    artist = post.get("tag_string_artist", "unknown")
+    score = post.get("score", 0)
+    rating = post.get("rating", "?")
+
     color_map = {
     "s": 0x3498db,
     "q": 0xf1c40f,
     "e": 0xe74c3c
 }
-    color = color_map.get(post.get("rating"), 0x2b2d31)
-
+    color = color_map.get(rating, 0x2b2d31)
+    
     embed = discord.Embed(
         url=post_url,
         color=color
