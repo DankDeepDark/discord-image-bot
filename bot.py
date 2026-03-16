@@ -45,10 +45,14 @@ async def send_random_image(interaction, tag):
         return
 
     image = (
-    post.get("file_url")
-    or post.get("large_file_url")
-    or post.get("preview_file_url")
-)
+        post.get("file_url")
+        or post.get("large_file_url")
+        or post.get("preview_file_url")
+    )
+
+    if not image:
+        await interaction.followup.send("Ảnh không hợp lệ.")
+        return
 
     embed = discord.Embed(
         title=f"Image: {tag}",
@@ -56,7 +60,8 @@ async def send_random_image(interaction, tag):
     )
 
     embed.set_image(url=image)
-    embed.set_author(name=tag)  
+    embed.set_author(name=tag)
+    embed.set_footer(text="Powered by Danbooru", icon_url="https://danbooru.donmai.us/favicon.ico")
 
     view = ImageView(lambda i: send_random_image(i, tag))
 
@@ -64,9 +69,6 @@ async def send_random_image(interaction, tag):
         await interaction.edit_original_response(embed=embed, view=view)
     else:
         await interaction.response.send_message(embed=embed, view=view)
-    if not image:
-        await interaction.followup.send("Ảnh không hợp lệ.")
-    return
 
 async def tag_autocomplete(
     interaction: discord.Interaction,
