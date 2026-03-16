@@ -33,9 +33,12 @@ async def send_random_image(interaction, tag):
 
     if not posts:
         url = f"https://danbooru.donmai.us/posts.json?tags={tag} order:random&limit=100"
-
+        post_url = f"https://danbooru.donmai.us/posts/{post['id']}"
         posts = await ImageAPI.fetch_images(url)
 
+        artist = post.get("tag_string_artist", "unknown")
+        score = post.get("score", 0)
+        rating = post.get("rating", "?")
         # lọc post lỗi
         posts = [
             p for p in posts
@@ -59,19 +62,31 @@ async def send_random_image(interaction, tag):
     if not image:
         await interaction.followup.send("Ảnh không hợp lệ.")
         return
+    
+    color_map = {
+    "s": 0x3498db,
+    "q": 0xf1c40f,
+    "e": 0xe74c3c
+}
+    color = color_map.get(post.get("rating"), 0x2b2d31)
 
     embed = discord.Embed(
-        title=f"Image: {tag}",
-        color=0x2b2d31
+        url=post_url,
+        color=color
     )
 
     embed.set_image(url=image)
     embed.set_author(
-    name=f"Tag: {tag}",
+    name=f"Tag: {tag.replace('_', ' ')}",
     icon_url="https://danbooru.donmai.us/favicon.ico"
 )
-    embed.set_footer(text="Powered by Danbooru")
-
+    embed.add_field(name="Artist", value=artist, inline=True)
+    embed.add_field(name="Score", value=score, inline=True)
+    embed.add_field(name="Rating", value=rating, inline=True)
+    embed.set_footer(
+    text=f"Post ID: {post['id']} • Danbooru",
+    icon_url="https://danbooru.donmai.us/favicon.ico"
+)
     view = ImageView(lambda i: send_random_image(i, tag))
 
     if interaction.response.is_done():
