@@ -63,10 +63,34 @@ async def send_random_image(interaction, tag):
         await interaction.followup.send("Ảnh không hợp lệ.")
     return
 
+async def tag_autocomplete(
+    interaction: discord.Interaction,
+    current: str
+):
+    tags = [
+        "waifu",
+        "neko",
+        "milf",
+        "cosplay",
+        "marin_kitagawa",
+        "raiden_shogun",
+        "hatsune_miku",
+        "rem_(re_zero)",
+        "zero_two"
+    ]
+
+    return [
+        app_commands.Choice(name=tag, value=tag)
+        for tag in tags
+        if current.lower() in tag.lower()
+    ][:25]
+
 @bot.tree.command(
     name="nsfw",
     description="Gửi ảnh"
 )
+@app_commands.autocomplete(tag=tag_autocomplete)
+@app_commands.checks.cooldown(1, 5, key=lambda i: i.user.id)
 async def nsfw_command(interaction: discord.Interaction, tag: str):
     await interaction.response.defer()
 
