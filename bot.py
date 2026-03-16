@@ -32,9 +32,15 @@ async def send_random_image(interaction, tag):
     posts = get_cache(cache_key)
 
     if not posts:
-        url = f"https://danbooru.donmai.us/posts.json?tags={tag}&limit=50"
+        url = f"https://danbooru.donmai.us/posts.json?tags={tag} order:random&limit=100"
 
         posts = await ImageAPI.fetch_images(url)
+
+        # lọc post lỗi
+        posts = [
+            p for p in posts
+            if p.get("file_url") or p.get("large_file_url")
+        ]
 
         set_cache(cache_key, posts)
 
@@ -60,8 +66,11 @@ async def send_random_image(interaction, tag):
     )
 
     embed.set_image(url=image)
-    embed.set_author(name=tag)
-    embed.set_footer(text="Powered by Danbooru", icon_url="https://danbooru.donmai.us/favicon.ico")
+    embed.set_author(
+    name=f"Tag: {tag}",
+    icon_url="https://danbooru.donmai.us/favicon.ico"
+)
+    embed.set_footer(text="Powered by Danbooru")
 
     view = ImageView(lambda i: send_random_image(i, tag))
 
@@ -75,16 +84,24 @@ async def tag_autocomplete(
     current: str
 ):
     tags = [
-        "waifu",
-        "neko",
-        "milf",
-        "cosplay",
-        "marin_kitagawa",
-        "raiden_shogun",
-        "hatsune_miku",
-        "rem_(re_zero)",
-        "zero_two"
-    ]
+    "1girl",
+    "2girls",
+    "waifu",
+    "neko",
+    "milf",
+    "cosplay",
+    "maid",
+    "bikini",
+    "thighhighs",
+    "school_uniform",
+    "marin_kitagawa",
+    "raiden_shogun",
+    "hatsune_miku",
+    "rem_(re_zero)",
+    "zero_two",
+    "yor_forger",
+    "makima_(chainsaw_man)",
+]
 
     return [
         app_commands.Choice(name=tag, value=tag)
@@ -92,10 +109,24 @@ async def tag_autocomplete(
         if current.lower() in tag.lower()
     ][:25]
 
+def is_nsfw():
+    async def predicate(interaction: discord.Interaction):
+        if interaction.channel and interaction.channel.is_nsfw():
+            return True
+
+        await interaction.response.send_message(
+            "❌ Lệnh này chỉ dùng trong NSFW channel.",
+            ephemeral=True
+        )
+        return False
+
+    return app_commands.check(predicate)
+
 @bot.tree.command(
     name="nsfw",
     description="Gửi ảnh"
 )
+@is_nsfw()
 @app_commands.autocomplete(tag=tag_autocomplete)
 @app_commands.checks.cooldown(1, 5, key=lambda i: i.user.id)
 async def nsfw_command(interaction: discord.Interaction, tag: str):
