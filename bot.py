@@ -66,9 +66,9 @@ async def send_random_image(interaction, tag):
     rating = post.get("rating", "?")
 
     color_map = {
-    "s": 0x3498db,
-    "q": 0xf1c40f,
-    "e": 0xe74c3c
+    "s": 0x57F287,
+    "q": 0xFEE75C,
+    "e": 0xED4245
 }
     color = color_map.get(rating, 0x2b2d31)
     
